@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script id="aura-preview-performance-controller">
+(function() {
+if (window.__auraPreviewPerformanceController) return;
+const nativeRequestAnimationFrame = window.requestAnimationFrame
+? window.requestAnimationFrame.bind(window)
+: function(callback) { return window.setTimeout(function() { callback(Date.now()); }, 16); };
+const nativeCancelAnimationFrame = window.cancelAnimationFrame
+? window.cancelAnimationFrame.bind(window)
+: window.clearTimeout.bind(window);
+const nativeSetInterval = window.setInterval.bind(window);
+let paused = false;
+let nextFrameId = 1;
+const frameRecords = new Map();
+const pausedFrameCallbacks = new Map();
+const style = document.createElement('style');
+style.id = 'aura-preview-performance-style';
+style.textContent = [
+'html[data-aura-preview-paused="true"] *,',
+'html[data-aura-preview-paused="true"] *::before,',
+'html[data-aura-preview-paused="true"] *::after {',
+'  animation-play-state: paused !important;',
+'  transition-duration: 0s !important;',
+'  scroll-behavior: auto !important;',
+'}'
+].join('\n');
+document.head.appendChild(style);
+window.requestAnimationFrame = function(callback) {
+const frameId = nextFrameId++;
+if (paused) {
+pausedFrameCallbacks.set(frameId, callback);
+frameRecords.set(frameId, { paused: true });
+return frameId;
+}
+const nativeFrameId = nativeRequestAnimationFrame(function(timestamp) {
+frameRecords.delete(frameId);
+callback(timestamp);
+});
+frameRecords.set(frameId, { nativeFrameId: nativeFrameId });
+return frameId;
+};
+window.cancelAnimationFrame = function(frameId) {
+const record = frameRecords.get(frameId);
+pausedFrameCallbacks.delete(frameId);
+if (record && typeof record.nativeFrameId !== 'undefined') {
+nativeCancelAnimationFrame(record.nativeFrameId);
+}
+frameRecords.delete(frameId);
+};
+window.setInterval = function(callback, delay) {
+const args = Array.prototype.slice.call(arguments, 2);
+return nativeSetInterval(function() {
+if (paused) return;
+callback.apply(this, args);
+}, delay);
+};
+const flushPausedFrames = function() {
+const callbacks = Array.from(pausedFrameCallbacks.entries());
+pausedFrameCallbacks.clear();
+callbacks.forEach(function(entry) {
+const frameId = entry[0];
+const callback = entry[1];
+const nativeFrameId = nativeRequestAnimationFrame(function(timestamp) {
+frameRecords.delete(frameId);
+callback(timestamp);
+});
+frameRecords.set(frameId, { nativeFrameId: nativeFrameId });
+});
+};
+const setPaused = function(nextPaused) {
+const shouldPause = Boolean(nextPaused);
+if (paused === shouldPause) return;
+paused = shouldPause;
+document.documentElement.toggleAttribute('data-aura-preview-paused', paused);
+if (!paused) {
+flushPausedFrames();
+}
+};
+window.__auraPreviewPerformanceController = {
+setPaused: setPaused,
+get paused() {
+return paused;
+}
+};
+window.addEventListener('message', function(event) {
+if (event.source !== window.parent) return;
+if (!event.data || event.data.type !== 'aura-preview-performance-mode') return;
+setPaused(event.data.paused);
+});
+})();
+</script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Motor City Auto Detailing | Mobile Detailing in Mesa & the East Valley, AZ</title>
+<meta name="description" content="Mobile auto detailing serving Mesa, Tempe, Chandler, Gilbert, Queen Creek, Scottsdale & Phoenix since 1994. Paint correction, ceramic coating, and interior restoration — delivered to your driveway. Call (480) 570-9750." />
+<link rel="canonical" href="https://www.motorcityautodetailing.com/" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Motor City Auto Detailing | Our Shop Is In Your Driveway" />
+<meta property="og:description" content="Mobile detailing for Mesa and the East Valley since 1994. Paint correction, ceramic coating, and full interior restoration delivered to your home or workplace." />
+<meta property="og:url" content="https://www.motorcityautodetailing.com/" />
+<meta property="og:image" content="assets/images/interior-detail-01.png" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Motor City Auto Detailing | Our Shop Is In Your Driveway" />
+<meta name="twitter:description" content="Mobile detailing for Mesa and the East Valley since 1994. Paint correction, ceramic coating, and full interior restoration delivered to your home or workplace." />
+<meta name="twitter:image" content="assets/images/interior-detail-01.png" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23060706'/%3E%3Ctext x='32' y='43' font-family='Arial,Helvetica,sans-serif' font-weight='900' font-size='34' fill='%232f5eff' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AutoRepair",
+  "name": "Motor City Auto Detailing, LLC",
+  "slogan": "Our Shop Is In Your Driveway",
+  "description": "Mobile auto detailing serving Mesa and the East Valley since 1994. Services include hand wash, paint correction, ceramic coating, interior detailing, leather conditioning, headlight restoration, and odor removal.",
+  "telephone": "+1-480-570-9750",
+  "url": "https://www.motorcityautodetailing.com/",
+  "areaServed": ["Mesa, AZ", "Tempe, AZ", "Chandler, AZ", "Gilbert, AZ", "Queen Creek, AZ", "Scottsdale, AZ", "Phoenix, AZ"],
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Mesa",
+    "addressRegion": "AZ",
+    "addressCountry": "US"
+  },
+  "openingHoursSpecification": [
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "08:00", "closes": "17:00" },
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "08:00", "closes": "13:00" }
+  ],
+  "sameAs": [
+    "https://facebook.com/motorcityad",
+    "https://instagram.com/motorcityautodetailing"
+  ],
+  "foundingDate": "1994"
+}
+</script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+--bg: #060706;
+--panel: #10110f;
+--panel-2: #151713;
+--cream: #f3f0e8;
+--muted: rgba(243, 240, 232, 0.58);
+--soft: rgba(243, 240, 232, 0.12);
+--line: rgba(243, 240, 232, 0.10);
+--orange: #2f5eff;
+--orange-soft: rgba(47, 94, 255, 0.22);
+--ease: cubic-bezier(.22, 1, .36, 1);
+}
+* { box-sizing: border-box; }
+html {
+background: var(--bg);
+color-scheme: dark;
+scroll-behavior: auto;
+}
+body {
+margin: 0;
+overflow-x: hidden;
+background:
+radial-gradient(circle at 70% 10%, rgba(47, 94, 255, 0.12), transparent 34rem),
+radial-gradient(circle at 15% 45%, rgba(243, 240, 232, 0.05), transparent 26rem),
+var(--bg);
+color: var(--cream);
+font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+-webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+img, video { display: block; }
+::selection { background: var(--cream); color: var(--bg); }
+.noise {
+position: fixed;
+inset: 0;
+z-index: 1;
+pointer-events: none;
+opacity: .18;
+background-image: radial-gradient(rgba(255,255,255,.18) 1px, transparent 1px);
+background-size: 4px 4px;
+mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+}
+.grid-veil {
+position: fixed;
+inset: 0;
+z-index: 2;
+pointer-events: none;
+opacity: .13;
+background-image:
+linear-gradient(rgba(243,240,232,.09) 1px, transparent 1px),
+linear-gradient(90deg, rgba(243,240,232,.09) 1px, transparent 1px);
+background-size: 80px 80px;
+mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 84%, transparent);
+}
+.page-rail {
+position: fixed;
+left: 22px;
+bottom: 28px;
+z-index: 45;
+pointer-events: none;
+writing-mode: vertical-rl;
+transform: rotate(180deg);
+color: rgba(243, 240, 232, .38);
+font-size: 10px;
+font-weight: 800;
+letter-spacing: .14em;
+text-transform: uppercase;
+}
+.wordmark {
+letter-spacing: -0.08em;
+white-space: nowrap;
+}
+.nav-link {
+position: relative;
+text-transform: uppercase;
+letter-spacing: .02em;
+}
+.nav-link::after {
+content: "";
+position: absolute;
+left: 0;
+right: 0;
+bottom: -8px;
+height: 1px;
+transform: scaleX(0);
+transform-origin: right;
+background: currentColor;
+transition: transform .45s var(--ease);
+}
+.nav-link:hover::after {
+transform: scaleX(1);
+transform-origin: left;
+}
+.section-label {
+display: inline-flex;
+align-items: center;
+gap: .7rem;
+font-size: 11px;
+font-weight: 800;
+letter-spacing: .14em;
+text-transform: uppercase;
+color: rgba(243,240,232,.54);
+}
+.section-label::before {
+content: "";
+width: 7px;
+height: 7px;
+border-radius: 999px;
+background: var(--orange);
+box-shadow: 0 0 20px rgba(47,94,255,.5);
+}
+.reveal,
+[data-reveal] {
+opacity: 0;
+transform: translateY(32px);
+will-change: opacity, transform;
+}
+.hero-card {
+transform-origin: center;
+will-change: transform;
+border: 1px solid var(--line);
+box-shadow: 0 40px 120px rgba(0,0,0,.62);
+}
+.glass {
+border: 1px solid var(--line);
+background: rgba(255,255,255,.035);
+backdrop-filter: blur(18px);
+}
+.magnetic-button {
+transition: transform .45s var(--ease), background .45s var(--ease), border-color .45s var(--ease);
+}
+.magnetic-button:hover {
+transform: translateY(-2px);
+border-color: rgba(47,94,255,.45);
+background: rgba(47,94,255,.13);
+}
+.service-card,
+.pricing-card,
+.note-card,
+.archive-card {
+transition: transform .55s var(--ease), border-color .55s var(--ease), background .55s var(--ease);
+will-change: transform, opacity;
+}
+.service-card:hover,
+.pricing-card:hover,
+.note-card:hover,
+.archive-card:hover {
+transform: translateY(-8px);
+border-color: rgba(47,94,255,.34);
+background: rgba(255,255,255,.06);
+}
+.note-card::after {
+content: "";
+position: absolute;
+inset: 0;
+pointer-events: none;
+opacity: 0;
+background: linear-gradient(135deg, rgba(243, 240, 232, 0.14), transparent 42%);
+transition: opacity 500ms var(--ease);
+}
+.note-card:hover::after { opacity: 1; }
+.masked-number {
+color: transparent;
+background-image: var(--number-image);
+background-position: 50% 50%;
+background-size: 118%;
+-webkit-background-clip: text;
+background-clip: text;
+filter: saturate(.82) brightness(1.06);
+will-change: transform, background-position;
+}
+.strip-image,
+.archive-card img,
+.archive-card video {
+will-change: transform;
+transform: scale(1.08);
+}
+.archive-card:hover img,
+.archive-card:hover video {
+transform: scale(1.16);
+opacity: 0.95;
+}
+.parallax-image {
+position: absolute;
+overflow: hidden;
+border: 1px solid var(--line);
+background: #101310;
+opacity: .68;
+will-change: transform;
+}
+.parallax-image img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+filter: saturate(.72) brightness(.72);
+transform: scale(1.14);
+will-change: transform;
+}
+.timeline-bar {
+transform: scaleX(0);
+transform-origin: left center;
+background: linear-gradient(90deg, var(--orange), rgba(243,240,232,.82));
+}
+.footer-input {
+transition: border-color .35s var(--ease), background .35s var(--ease);
+}
+.footer-input:hover {
+border-color: rgba(47,94,255,.35);
+background: rgba(255,255,255,.06);
+}
+.hero-video-card video,
+.archive-card video,
+.note-card video {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+/* Brand preloader */
+.ax-loader {
+position: fixed;
+inset: 0;
+z-index: 200;
+display: flex;
+align-items: center;
+justify-content: center;
+background: var(--bg);
+will-change: transform;
+}
+.ax-loader__inner {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 26px;
+padding: 0 24px;
+}
+.ax-loader__brand {
+display: inline-flex;
+align-items: center;
+line-height: 1;
+font-weight: 900;
+letter-spacing: -0.08em;
+color: var(--cream);
+font-size: clamp(2.4rem, 8vw, 5.6rem);
+opacity: 0;
+transform: translateY(18px);
+filter: blur(10px);
+will-change: transform, opacity, filter;
+}
+.ax-loader__brand sup {
+font-size: 0.26em;
+font-weight: 800;
+letter-spacing: 0;
+align-self: flex-start;
+margin-left: 0.02em;
+}
+.ax-dot {
+width: 0.14em;
+height: 0.14em;
+margin-left: 0.14em;
+border-radius: 999px;
+background: var(--orange);
+box-shadow: 0 0 28px rgba(47, 94, 255, 0.65);
+}
+.ax-loader__track {
+width: min(300px, 64vw);
+height: 2px;
+overflow: hidden;
+border-radius: 999px;
+background: rgba(243, 240, 232, 0.12);
+}
+.ax-loader__bar {
+width: 100%;
+height: 100%;
+transform: scaleX(0);
+transform-origin: left center;
+border-radius: 999px;
+background: linear-gradient(90deg, var(--orange), rgba(243, 240, 232, 0.82));
+}
+.ax-loader__meta {
+display: flex;
+justify-content: space-between;
+width: min(300px, 64vw);
+font-size: 10px;
+font-weight: 800;
+letter-spacing: 0.14em;
+text-transform: uppercase;
+color: rgba(243, 240, 232, 0.45);
+opacity: 0;
+}
+@media (max-width: 767px) {
+.wordmark { letter-spacing: -0.065em; }
+.page-rail { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+*,
+*::before,
+*::after {
+animation-duration: .001ms !important;
+animation-iteration-count: 1 !important;
+scroll-behavior: auto !important;
+transition-duration: .001ms !important;
+}
+.ax-loader { display: none; }
+.reveal,
+[data-reveal],
+.timeline-bar {
+opacity: 1 !important;
+transform: none !important;
+}
+}
+</style>
+</head>
+
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="grid-veil" aria-hidden="true"></div>
+  <div class="page-rail" aria-hidden="true">Mobile Detailing / Mesa, AZ</div>
+
+  <div id="ax-loader" class="ax-loader" aria-hidden="true">
+    <div class="ax-loader__inner">
+      <div class="ax-loader__brand">
+        <span>Motor City</span><span class="ax-dot"></span>
+      </div>
+      <div class="ax-loader__track">
+        <div class="ax-loader__bar"></div>
+      </div>
+      <div class="ax-loader__meta">
+        <span class="ax-loader__pct">000</span>
+        <span>Our Shop Is In Your Driveway</span>
+      </div>
+    </div>
+  </div>
+
+  <header class="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-5 py-5 md:px-8 lg:px-12">
+    <a href="#home" class="text-lg font-semibold tracking-[-0.055em] text-[#f3f0e8] md:text-xl">
+      Motor City <span class="text-[#2f5eff]">Auto Detailing</span>
+    </a>
+
+    <nav class="hidden items-center gap-11 text-xs font-bold text-[#f3f0e8]/82 md:flex">
+      <a href="#work" class="nav-link"><span class="mr-5 inline-block h-1.5 w-1.5 rounded-full bg-[#2f5eff] align-middle"></span>Services</a>
+      <a href="#studio" class="nav-link">Our Method</a>
+      <a href="#pricing" class="nav-link">Packages</a>
+      <a href="#contact" class="nav-link">Contact</a>
+    </nav>
+
+    <a href="tel:+14805709750" class="glass hidden items-center rounded-full px-4 py-2 text-xs font-bold tracking-wide text-[#f3f0e8] lg:flex">(480) 570-9750</a>
+
+    <button class="glass flex h-10 w-10 items-center justify-center rounded-full md:hidden" aria-label="Open menu">
+      <i data-lucide="menu" class="h-4 w-4"></i>
+    </button>
+  </header>
+
+  <main id="home" class="relative z-10 overflow-hidden">
+
+    <!-- HERO -->
+    <section class="hero-section relative flex min-h-screen items-center overflow-hidden px-5 py-24 md:px-8 lg:px-12">
+      <div class="hero-copy relative z-20 max-w-[360px]">
+        <p class="section-label mb-10">Mobile Detailing / Est. 1994</p>
+        <p class="max-w-[340px] text-[21px] font-medium leading-[1.45] tracking-[-0.045em] text-[#f3f0e8]/76 md:text-[25px]">
+          <span class="text-[#f3f0e8]">Motor City Auto Detailing</span> brings concours-level paint, interior, and ceramic care to your driveway across Mesa and the East Valley.
+        </p>
+
+        <a href="#work" class="magnetic-button mt-14 inline-flex items-center gap-5 rounded-full border border-[#f3f0e8]/12 px-5 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[#f3f0e8]">
+          View Our Services
+          <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#2f5eff] text-[#060706]">
+            <i data-lucide="arrow-right" class="h-4 w-4"></i>
+          </span>
+        </a>
+      </div>
+
+      <div class="hero-stack absolute left-1/2 top-[48%] z-10 h-[430px] w-[310px] -translate-x-1/2 -translate-y-1/2 md:h-[560px] md:w-[430px] lg:h-[620px] lg:w-[480px]">
+        <div class="hero-card absolute inset-0 -translate-x-20 translate-y-12 -rotate-[17deg] rounded-[20px] bg-[#151713]">
+          <div class="h-full w-full rounded-[20px] bg-gradient-to-br from-[#2f5eff]/30 via-transparent to-black"></div>
+        </div>
+
+        <div class="hero-card absolute inset-0 translate-x-20 translate-y-10 rotate-[13deg] rounded-[20px] bg-[#d8cbb5]">
+          <div class="absolute right-10 top-24 font-serif text-[110px] text-[#2f5eff]/80">M</div>
+          <div class="absolute bottom-12 left-10 h-32 w-32 rounded-full border border-black/20"></div>
+        </div>
+
+        <div class="hero-card absolute inset-0 translate-x-32 translate-y-20 rotate-[18deg] rounded-[20px] bg-[#080808]">
+          <div class="h-full w-full rounded-[20px] bg-[linear-gradient(135deg,rgba(255,255,255,.16),transparent_45%)]"></div>
+        </div>
+
+        <div class="hero-card absolute inset-0 rotate-[4deg] overflow-hidden rounded-[20px] bg-[#201714]">
+          <img src="assets/images/interior-detail-01.png" alt="Freshly detailed interior on a Motor City Auto Detailing client vehicle" class="h-full w-full object-cover saturate-125">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/48 via-transparent to-blue-950/10"></div>
+          <div class="absolute inset-0 bg-[#2f5eff]/10 mix-blend-overlay"></div>
+        </div>
+
+        <button class="hero-cta absolute right-[-22px] top-1/2 z-20 flex h-16 w-16 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/80 text-white shadow-2xl backdrop-blur transition duration-300 hover:scale-110 hover:bg-[#2f5eff]" aria-label="View services">
+          <i data-lucide="arrow-right" class="h-7 w-7"></i>
+        </button>
+      </div>
+
+      <h1 class="hero-wordmark wordmark pointer-events-none absolute -bottom-5 left-2 z-0 select-none text-[17vw] font-black leading-none text-[#e8e0d4] md:-bottom-12 lg:left-6 lg:text-[15vw]">
+        Motor City
+      </h1>
+
+      <div class="hero-meta glass absolute bottom-10 right-5 z-20 hidden w-[270px] rounded-[24px] p-6 md:right-8 lg:block">
+        <div class="mb-8 text-2xl text-[#2f5eff]">✳</div>
+        <p class="text-[19px] leading-[1.25] tracking-[-0.04em]">
+          Paint correction, ceramic protection, and interior restoration.
+        </p>
+        <div class="mt-10 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.14em] text-[#f3f0e8]/45">
+          <span>Mesa, AZ</span>
+          <span class="h-1 w-1 rounded-full bg-[#2f5eff]"></span>
+          <span>East Valley Service</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDIO -->
+    <section id="studio" class="brand-section relative flex min-h-screen items-center overflow-hidden px-5 py-24 md:px-8 lg:px-12">
+      <h2 class="brand-drift wordmark pointer-events-none absolute -top-16 left-0 text-[6rem] font-black leading-none text-[#f3f0e8]/10 sm:text-[9rem] md:text-[13rem] lg:text-[15rem]">
+        Motor City
+      </h2>
+
+      <div class="mx-auto grid w-full max-w-6xl gap-12 md:grid-cols-12">
+        <div class="md:col-span-4">
+          <p class="section-label">Our Method</p>
+          <p data-reveal class="mt-8 max-w-sm text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">
+            Every visit runs the same disciplined loop: read the vehicle, prep every surface, correct what the Arizona sun has damaged, then protect what we've restored.
+          </p>
+        </div>
+
+        <div class="brand-words grid gap-6 md:col-span-7 md:col-start-6">
+          <p class="brand-word text-6xl font-semibold tracking-[-0.08em] md:text-8xl">assess</p>
+          <p class="brand-word text-right text-6xl font-semibold tracking-[-0.08em] md:text-8xl">prep</p>
+          <p class="brand-word text-6xl font-semibold tracking-[-0.08em] md:text-8xl">correct.</p>
+          <p class="brand-word text-right text-6xl font-semibold tracking-[-0.08em] md:text-8xl">protect</p>
+          <p class="brand-word text-6xl font-semibold tracking-[-0.08em] md:text-8xl">deliver</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="services-section relative min-h-screen overflow-hidden px-5 py-24 md:px-8 lg:px-12">
+      <div class="absolute left-1/2 top-0 h-[360px] w-[78%] -translate-x-1/2 overflow-hidden rounded-b-[32px] border-x border-b border-[#f3f0e8]/10 md:h-[480px] lg:h-[620px]">
+        <img src="assets/images/reel-01-mid.jpg" alt="Motor City Auto Detailing at work on a client vehicle" class="strip-image h-full w-full object-cover object-center opacity-70">
+      </div>
+
+      <div class="grid min-h-screen items-center gap-14 md:grid-cols-12">
+        <div data-reveal class="md:col-span-3">
+          <p class="section-label mb-20">Service Menu</p>
+          <p class="max-w-60 text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">
+            For Mesa and East Valley drivers who want their vehicle detailed at home, at work, or wherever the day takes them.
+          </p>
+        </div>
+
+        <div class="md:col-span-6 md:col-start-4">
+          <p class="services-copy text-4xl font-semibold leading-[0.95] tracking-[-0.07em] md:text-6xl lg:text-7xl">
+            We treat every surface like it's the only one that matters.
+          </p>
+
+          <div class="mt-10 grid gap-3 sm:grid-cols-2">
+            <div class="service-card glass rounded-[28px] p-6">
+              <p class="mb-14 text-xs font-bold uppercase tracking-[0.14em] text-[#f3f0e8]/44">01</p>
+              <h3 class="text-2xl font-semibold tracking-[-0.05em]">Executive Wash</h3>
+              <p class="mt-4 text-sm leading-[1.6] text-[#f3f0e8]/54">Full interior vacuum, glass, door jambs, and a hand-washed foam bath that keeps daily drivers sharp.</p>
+            </div>
+            <div class="service-card glass rounded-[28px] p-6">
+              <p class="mb-14 text-xs font-bold uppercase tracking-[0.14em] text-[#f3f0e8]/44">02</p>
+              <h3 class="text-2xl font-semibold tracking-[-0.05em]">Express Detail</h3>
+              <p class="mt-4 text-sm leading-[1.6] text-[#f3f0e8]/54">Clay treatment and a 3-month ceramic paint sealant layered on top of the Executive Wash routine.</p>
+            </div>
+            <div class="service-card glass rounded-[28px] p-6">
+              <p class="mb-14 text-xs font-bold uppercase tracking-[0.14em] text-[#f3f0e8]/44">03</p>
+              <h3 class="text-2xl font-semibold tracking-[-0.05em]">Everything But The Kitchen Sink</h3>
+              <p class="mt-4 text-sm leading-[1.6] text-[#f3f0e8]/54">Engine bay, fenderwells, machine polish, and full carpet, mat, and upholstery restoration.</p>
+            </div>
+            <div class="service-card glass rounded-[28px] p-6">
+              <p class="mb-14 text-xs font-bold uppercase tracking-[0.14em] text-[#f3f0e8]/44">04</p>
+              <h3 class="text-2xl font-semibold tracking-[-0.05em]">Ceramic Coating</h3>
+              <p class="mt-4 text-sm leading-[1.6] text-[#f3f0e8]/54">Clay, compound, and machine polish finished with a 1-year ceramic coating built for Arizona sun.</p>
+            </div>
+          </div>
+        </div>
+
+        <div data-reveal class="md:col-span-2 md:col-start-11">
+          <p class="mb-6 text-xs font-bold uppercase tracking-[0.12em]">Full Service List <span aria-hidden="true">→</span></p>
+          <p class="max-w-60 text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">
+            Leather conditioning, headlight restoration, odor removal, and exotic, collector, and fleet detailing are also available.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TELEMETRY -->
+    <section class="numbers-intro relative min-h-screen overflow-hidden px-5 py-24 md:px-8 lg:px-12">
+      <figure class="parallax-image parallax-slow pointer-events-none right-4 top-32 h-28 w-40 rotate-[7deg] md:right-8 md:top-28 md:h-48 md:w-72">
+        <img src="assets/images/reel-02-poster.jpg" alt="Detailing work in progress">
+      </figure>
+
+      <figure class="parallax-image parallax-fast pointer-events-none bottom-24 left-4 h-24 w-36 rotate-[-9deg] md:bottom-20 md:left-10 md:h-40 md:w-60">
+        <img src="assets/images/interior-detail-02.png" alt="Detailed vehicle interior">
+      </figure>
+
+      <div class="grid min-h-screen items-center gap-12 md:grid-cols-12">
+        <div data-reveal class="md:col-span-3">
+          <p class="section-label mb-8">By The Numbers</p>
+          <p class="max-w-72 text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">
+            Thirty-plus years of learning exactly what Arizona heat, dust, and UV do to a vehicle — and how to stop it.
+          </p>
+          <a href="#contact" class="mt-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em]">Book your detail <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+        </div>
+
+        <div data-reveal class="md:col-span-5 md:col-start-5">
+          <h2 class="text-6xl font-semibold leading-[0.92] tracking-[-0.08em] md:text-8xl lg:text-9xl">East Valley<br>Since 1994</h2>
+        </div>
+
+        <div class="stat-grid md:col-span-3 md:col-start-10">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="note-card glass rounded-[24px] p-5"><p class="text-5xl font-semibold tracking-[-0.06em]">32</p><p class="mt-6 text-xs font-medium text-[#f3f0e8]/50">years in business</p></div>
+            <div class="note-card glass rounded-[24px] p-5"><p class="text-5xl font-semibold tracking-[-0.06em]">07</p><p class="mt-6 text-xs font-medium text-[#f3f0e8]/50">cities served</p></div>
+            <div class="note-card glass rounded-[24px] p-5"><p class="text-5xl font-semibold tracking-[-0.06em]">06</p><p class="mt-6 text-xs font-medium text-[#f3f0e8]/50">days scheduled weekly</p></div>
+            <div class="note-card glass rounded-[24px] p-5"><p class="text-5xl font-semibold tracking-[-0.06em]">00</p><p class="mt-6 text-xs font-medium text-[#f3f0e8]/50">miles you have to drive</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIELD ARCHIVE SCROLL -->
+    <section class="archive-scroll-section relative overflow-hidden px-5 py-24 md:px-8 lg:px-12">
+      <div class="mx-auto grid max-w-6xl gap-12 md:grid-cols-12">
+        <div class="md:col-span-3">
+          <p class="section-label">From The Driveway</p>
+          <p class="mt-8 max-w-64 text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">
+            A running record of finished vehicles and the mid-process work most people never see.
+          </p>
+        </div>
+
+        <div class="md:col-span-8 md:col-start-5">
+          <h2 class="archive-title text-[44px] font-black leading-[0.9] tracking-[-0.08em] text-[#f3f0e8] md:text-[70px] lg:text-[92px]">
+            Real vehicles, mid-detail, before the reveal.
+          </h2>
+        </div>
+      </div>
+
+      <div class="archive-gallery mt-20 flex gap-5 will-change-transform">
+        <figure class="archive-card h-[420px] w-[320px] shrink-0 overflow-hidden rounded-[34px] border border-[#f3f0e8]/10 bg-[#101310] md:h-[560px] md:w-[420px]">
+          <img src="assets/images/interior-detail-01.png" alt="Detailed vehicle interior, Motor City Auto Detailing" class="h-full w-full object-cover opacity-80">
+        </figure>
+
+        <figure class="archive-card mt-20 h-[360px] w-[300px] shrink-0 overflow-hidden rounded-[34px] border border-[#f3f0e8]/10 bg-[#101310] md:h-[460px] md:w-[360px]">
+          <video autoplay muted loop playsinline preload="none" poster="assets/images/reel-01-poster.jpg">
+            <source src="assets/videos/detail-reel-01.mp4" type="video/mp4">
+          </video>
+        </figure>
+
+        <figure class="archive-card h-[420px] w-[320px] shrink-0 overflow-hidden rounded-[34px] border border-[#f3f0e8]/10 bg-[#101310] md:h-[560px] md:w-[420px]">
+          <img src="assets/images/interior-detail-02.png" alt="Detailed vehicle interior, Motor City Auto Detailing" class="h-full w-full object-cover opacity-80">
+        </figure>
+
+        <figure class="archive-card mt-28 h-[360px] w-[300px] shrink-0 overflow-hidden rounded-[34px] border border-[#f3f0e8]/10 bg-[#101310] md:h-[460px] md:w-[360px]">
+          <video autoplay muted loop playsinline preload="none" poster="assets/images/reel-02-poster.jpg">
+            <source src="assets/videos/detail-reel-02.mp4" type="video/mp4">
+          </video>
+        </figure>
+
+        <figure class="archive-card h-[420px] w-[320px] shrink-0 overflow-hidden rounded-[34px] border border-[#f3f0e8]/10 bg-[#101310] md:h-[560px] md:w-[420px]">
+          <img src="assets/images/reel-01-mid.jpg" alt="Motor City Auto Detailing, exterior detail in progress" class="h-full w-full object-cover opacity-80">
+        </figure>
+      </div>
+    </section>
+
+    <!-- WORK -->
+    <section id="work" class="work-section relative min-h-screen overflow-hidden px-5 py-24 md:px-8 lg:px-12">
+      <div class="grid min-h-screen items-center gap-12 md:grid-cols-12">
+        <div class="work-copy md:col-span-3">
+          <p class="section-label mb-8">Our Process</p>
+          <h2 class="text-5xl font-semibold leading-[0.95] tracking-[-0.08em] md:text-6xl">04 Steps To Showroom Condition</h2>
+          <p class="mt-6 max-w-72 text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">
+            Every appointment follows the same four-step method — assess, correct, protect, deliver — whether it's a daily driver or a collector car.
+          </p>
+          <a href="#contact" class="magnetic-button mt-8 inline-flex rounded-full border border-[#f3f0e8]/12 px-5 py-3 text-xs font-bold uppercase tracking-[0.12em]">See The Process</a>
+        </div>
+
+        <div class="relative md:col-span-7 md:col-start-4">
+          <div class="relative flex min-h-[520px] items-center justify-center">
+            <span class="masked-number text-[13rem] font-black leading-none tracking-[-0.09em] md:text-[24rem] lg:text-[29rem]" style="--number-image: url('assets/images/reel-01-poster.jpg')">04</span>
+            <img src="assets/images/interior-detail-02.png" alt="Motor City Auto Detailing project preview" class="project-card absolute left-0 top-14 hidden h-44 w-72 rotate-[-14deg] rounded-[18px] border border-[#f3f0e8]/10 object-cover md:block">
+            <img src="assets/images/reel-02-mid.jpg" alt="Motor City Auto Detailing project preview" class="project-card absolute right-4 top-6 hidden h-44 w-72 rotate-[10deg] rounded-[18px] border border-[#f3f0e8]/10 object-cover md:block">
+          </div>
+        </div>
+
+        <div data-reveal class="md:col-span-2">
+          <p class="text-xs font-bold uppercase tracking-[0.12em] text-[#f3f0e8]/62">Service Archive</p>
+          <p class="mt-8 text-sm font-medium leading-[1.7] text-[#f3f0e8]/50">Exterior Correction, Interior Restoration, Ceramic Protection</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIELD NOTES -->
+    <section class="partners-section relative min-h-screen overflow-hidden px-5 py-24 md:px-8 lg:px-12">
+      <h2 class="partners-heading pointer-events-none absolute left-5 top-16 text-[18vw] font-black leading-none tracking-[-0.1em] text-[#f3f0e8]/[0.055] md:left-8 md:top-10 md:text-[15vw]">
+        The Difference
+      </h2>
+
+      <figure class="parallax-image parallax-slow pointer-events-none absolute right-5 top-28 hidden h-44 w-72 rotate-[5deg] overflow-hidden rounded-[28px] border border-[#f3f0e8]/10 md:block lg:right-14 lg:h-56 lg:w-96">
+        <img src="assets/images/reel-02-mid.jpg" alt="Motor City Auto Detailing at work">
+      </figure>
+
+      <div class="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center">
+        <div class="mb-16 grid gap-8 md:grid-cols-12">
+          <div class="md:col-span-3">
+            <p class="section-label">What Sets Us Apart</p>
+          </div>
+
+          <div class="md:col-span-7 md:col-start-5">
+            <h2 class="text-[52px] font-black leading-[0.9] tracking-[-0.08em] text-[#f3f0e8] md:text-[84px] lg:text-[104px]">
+              Five things Mesa drivers notice first.
+            </h2>
+          </div>
+        </div>
+
+        <div class="partner-logos grid grid-cols-1 gap-5 md:grid-cols-12">
+          <article class="note-card group relative min-h-[430px] overflow-hidden rounded-[38px] border border-[#f3f0e8]/10 bg-[#f3f0e8] p-8 text-[#060706] md:col-span-5">
+            <div class="absolute -right-6 -top-8 text-[180px] font-black leading-none tracking-[-0.12em] text-[#060706]/[0.06]">01</div>
+            <div class="relative z-10 flex h-full flex-col justify-between">
+              <div>
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-[#060706]/45">01 / Convenience</p>
+                <h3 class="mt-12 max-w-sm text-[50px] font-black leading-[0.88] tracking-[-0.08em] md:text-[64px]">We come to you.</h3>
+              </div>
+              <p class="max-w-sm text-base font-semibold leading-[1.55] text-[#060706]/62">No shop, no lobby, no waiting. Full mobile units bring their own water and equipment — right to your driveway or office lot.</p>
+            </div>
+          </article>
+
+          <article class="note-card group relative min-h-[430px] overflow-hidden rounded-[38px] border border-[#f3f0e8]/10 bg-[#111612] md:col-span-4">
+            <img src="assets/images/interior-detail-01.png" alt="Motor City Auto Detailing interior work" class="h-full w-full object-cover opacity-70 transition duration-700 group-hover:scale-105 group-hover:opacity-90">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#060706] via-[#060706]/25 to-transparent"></div>
+            <div class="absolute bottom-7 left-7 right-7">
+              <p class="text-xs font-black uppercase tracking-[0.18em] text-[#f3f0e8]/50">02 / Climate</p>
+              <h3 class="mt-5 text-[34px] font-black leading-[0.92] tracking-[-0.07em] text-[#f3f0e8]">Built for Arizona heat.</h3>
+            </div>
+          </article>
+
+          <article class="note-card relative min-h-[430px] overflow-hidden rounded-[38px] border border-[#f3f0e8]/10 bg-white/[0.035] p-7 md:col-span-3">
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-[#f3f0e8]/42">Coverage</p>
+            <div class="mt-10 space-y-5">
+              <div class="border-b border-[#f3f0e8]/10 pb-5"><p class="text-[11px] font-bold uppercase tracking-[0.16em] text-[#f3f0e8]/32">03</p><p class="mt-2 text-2xl font-black tracking-[-0.06em]">Paint</p></div>
+              <div class="border-b border-[#f3f0e8]/10 pb-5"><p class="text-[11px] font-bold uppercase tracking-[0.16em] text-[#f3f0e8]/32">04</p><p class="mt-2 text-2xl font-black tracking-[-0.06em]">Interior</p></div>
+              <div><p class="text-[11px] font-bold uppercase tracking-[0.16em] text-[#f3f0e8]/32">05</p><p class="mt-2 text-2xl font-black tracking-[-0.06em]">Ceramic</p></div>
+            </div>
+            <div class="absolute bottom-7 left-7 right-7">
+              <p class="text-sm font-medium leading-[1.65] text-[#f3f0e8]/56">Correction, restoration, and protection are treated as one connected system, not three separate add-ons.</p>
+            </div>
+          </article>
+
+          <article class="note-card group relative overflow-hidden rounded-[38px] border border-[#f3f0e8]/10 bg-[#0c0f0c] p-8 md:col-span-7">
+            <div class="absolute right-8 top-8 h-24 w-24 rounded-full border border-[#f3f0e8]/10"></div>
+            <div class="absolute right-14 top-14 h-12 w-12 rounded-full border border-[#f3f0e8]/10"></div>
+            <div class="relative z-10 grid gap-8 md:grid-cols-12">
+              <div class="md:col-span-4">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-[#f3f0e8]/42">04 / Experience</p>
+              </div>
+              <div class="md:col-span-8">
+                <h3 class="max-w-2xl text-[44px] font-black leading-[0.9] tracking-[-0.08em] text-[#f3f0e8] md:text-[64px]">Thirty years in the East Valley.</h3>
+                <p class="mt-7 max-w-lg text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">Since 1994 we've learned exactly how Arizona's sun, dust, and heat wear on a vehicle — and built our process around stopping it.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="note-card relative overflow-hidden rounded-[38px] border border-[#f3f0e8]/10 bg-[#2f5eff] p-8 text-[#060706] md:col-span-5">
+            <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#060706]/10"></div>
+            <p class="text-xs font-black uppercase tracking-[0.18em] text-[#060706]/50">05 / Standard</p>
+            <h3 class="mt-12 max-w-sm text-[42px] font-black leading-[0.9] tracking-[-0.08em] md:text-[58px]">Treated like it's ours.</h3>
+            <p class="mt-8 max-w-sm text-sm font-semibold leading-[1.65] text-[#060706]/62">Personal attention, quality, and convenience — the three principles the shop was built on in 1994.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="process-section relative min-h-screen overflow-hidden px-5 py-24 md:px-8 lg:px-12">
+      <figure class="parallax-image parallax-slow pointer-events-none right-4 top-24 h-28 w-44 rotate-[4deg] md:right-8 md:top-20 md:h-56 md:w-80">
+        <img src="assets/images/interior-detail-02.png" alt="Interior detailing in progress">
+      </figure>
+
+      <div data-reveal class="mb-16 max-w-2xl">
+        <p class="section-label mb-8">The Method</p>
+        <h2 class="text-6xl font-semibold leading-[0.95] tracking-[-0.08em] md:text-8xl">How It Works</h2>
+        <p class="mt-6 max-w-md text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">
+          A compact, repeatable sequence for turning a sun-faded daily driver into a vehicle that looks freshly delivered.
+        </p>
+      </div>
+
+      <div class="relative h-72 overflow-hidden rounded-[32px] border border-[#f3f0e8]/10 bg-white/[0.025]">
+        <div class="timeline-bar absolute left-0 top-10 h-7 w-1/4 rounded-r-full text-[#060706]"><span class="ml-4 text-xs font-bold leading-7">Assess</span></div>
+        <div class="timeline-bar absolute left-[18%] top-24 h-7 w-1/4 rounded-r-full text-[#060706]"><span class="ml-4 text-xs font-bold leading-7">Prep</span></div>
+        <div class="timeline-bar absolute left-[36%] top-[9.5rem] h-7 w-1/3 rounded-r-full text-[#060706]"><span class="ml-4 text-xs font-bold leading-7">Detail</span></div>
+        <div class="timeline-bar absolute left-[62%] top-52 h-7 w-1/3 rounded-r-full text-[#060706]"><span class="ml-4 text-xs font-bold leading-7">Protect</span></div>
+        <div class="grid h-full grid-cols-4 divide-x divide-[#f3f0e8]/10"></div>
+      </div>
+
+      <div class="process-columns mt-8 grid gap-4 md:grid-cols-4">
+        <div class="glass rounded-[28px] p-6"><h3 class="text-2xl font-semibold tracking-[-0.05em]">Assess</h3><p class="mt-5 text-sm leading-[1.65] text-[#f3f0e8]/56">We walk the vehicle with you, talk through its condition, and confirm the package that fits what it actually needs.</p></div>
+        <div class="glass rounded-[28px] p-6"><h3 class="text-2xl font-semibold tracking-[-0.05em]">Prep</h3><p class="mt-5 text-sm leading-[1.65] text-[#f3f0e8]/56">Foam bath hand wash and a full clay treatment lift bonded contaminants before any correction work begins.</p></div>
+        <div class="glass rounded-[28px] p-6"><h3 class="text-2xl font-semibold tracking-[-0.05em]">Detail</h3><p class="mt-5 text-sm leading-[1.65] text-[#f3f0e8]/56">Machine polish on paint, deep cleaning on carpets, mats, leather, and plastic — inside and out.</p></div>
+        <div class="glass rounded-[28px] p-6"><h3 class="text-2xl font-semibold tracking-[-0.05em]">Protect</h3><p class="mt-5 text-sm leading-[1.65] text-[#f3f0e8]/56">Ceramic sealant or a full 1-year ceramic coating locks in the finish against Arizona's UV and heat.</p></div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing" class="pricing-section relative min-h-screen px-5 py-24 md:px-8 lg:px-12">
+      <div class="grid gap-12 md:grid-cols-12">
+        <div class="pricing-copy md:col-span-4">
+          <p class="section-label mb-8">Engage</p>
+          <h2 class="text-6xl font-semibold leading-[0.95] tracking-[-0.08em] md:text-8xl">Packages</h2>
+          <p class="mt-6 max-w-72 text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">
+            Every quote is built around your specific vehicle, size, and condition — call or request a quote for exact pricing.
+          </p>
+        </div>
+
+        <div class="pricing-list grid gap-5 md:col-span-7 md:col-start-6">
+          <div class="pricing-card glass rounded-[36px] p-8">
+            <div class="mb-10 flex flex-wrap gap-2">
+              <span class="rounded-full border border-[#f3f0e8]/12 px-3 py-1 text-xs font-medium text-[#f3f0e8]/66">Mobile Service</span>
+              <span class="rounded-full bg-[#2f5eff] px-3 py-1 text-xs font-bold text-[#060706]">Most Popular</span>
+            </div>
+            <div class="flex items-baseline gap-3"><p class="text-3xl font-semibold tracking-[-0.06em]">Request Your Quote</p></div>
+            <h3 class="mt-12 text-4xl font-semibold tracking-[-0.07em] md:text-6xl">Executive Wash</h3>
+            <div class="mt-8 grid gap-4 md:grid-cols-2">
+              <p class="flex items-center gap-2 text-sm font-medium"><i data-lucide="check" class="h-4 w-4 text-[#2f5eff]"></i> Full interior vacuum</p>
+              <p class="flex items-center gap-2 text-sm font-medium"><i data-lucide="check" class="h-4 w-4 text-[#2f5eff]"></i> Glass & vents detailed</p>
+              <p class="flex items-center gap-2 text-sm font-medium"><i data-lucide="check" class="h-4 w-4 text-[#2f5eff]"></i> Foam bath hand wash</p>
+              <p class="flex items-center gap-2 text-sm font-medium"><i data-lucide="check" class="h-4 w-4 text-[#2f5eff]"></i> Tires cleaned & conditioned</p>
+            </div>
+          </div>
+
+          <div class="pricing-card glass rounded-[36px] p-8">
+            <div class="flex items-baseline gap-3"><p class="text-3xl font-semibold tracking-[-0.06em]">Request Your Quote</p></div>
+            <h3 class="mt-12 text-4xl font-semibold tracking-[-0.07em] md:text-6xl">Everything But The Kitchen Sink</h3>
+            <div class="mt-8 grid gap-4 md:grid-cols-2">
+              <p class="flex items-center gap-2 text-sm font-medium"><i data-lucide="check" class="h-4 w-4 text-[#2f5eff]"></i> Engine bay & fenderwells</p>
+              <p class="flex items-center gap-2 text-sm font-medium"><i data-lucide="check" class="h-4 w-4 text-[#2f5eff]"></i> Machine polish</p>
+              <p class="flex items-center gap-2 text-sm font-medium"><i data-lucide="check" class="h-4 w-4 text-[#2f5eff]"></i> Ceramic sealant (coating optional)</p>
+              <p class="flex items-center gap-2 text-sm font-medium"><i data-lucide="check" class="h-4 w-4 text-[#2f5eff]"></i> Full carpet & upholstery clean</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="contact-section relative min-h-screen px-5 py-24 md:px-8 lg:px-12">
+      <div class="grid gap-14 md:grid-cols-12">
+        <div class="contact-form md:col-span-4">
+          <p class="section-label mb-10">Contact</p>
+          <a href="tel:+14805709750" class="glass mb-5 flex w-full max-w-sm items-center justify-between rounded-[22px] px-5 py-4 text-sm font-medium text-[#f3f0e8]/58">Call (480) 570-9750 <i data-lucide="phone" class="h-4 w-4"></i></a>
+          <div class="mb-5 w-full max-w-sm border-b border-[#f3f0e8]/10 py-5 text-sm font-medium text-[#f3f0e8]/58">Mon–Fri 8am–5pm · Sat 8am–1pm <span class="text-[#f3f0e8]">Sun Closed</span></div>
+          <div class="mb-10 w-full max-w-sm border-b border-[#f3f0e8]/10 py-5 text-sm font-medium text-[#f3f0e8]/58">Serving Mesa, Tempe, Chandler, Gilbert, Queen Creek, Scottsdale & Phoenix.</div>
+          <p class="mb-8 max-w-72 text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">Ready to turn a sun-faded daily driver into a vehicle that looks freshly delivered?</p>
+          <a href="#footer" class="magnetic-button inline-flex items-center gap-4 rounded-full border border-[#f3f0e8]/12 px-4 py-3 text-xs font-bold uppercase tracking-[0.12em]">
+            Begin <span class="rounded-full bg-[#2f5eff] px-5 py-3 text-[#060706]">Request Service</span>
+          </a>
+        </div>
+
+        <div class="faq-list md:col-span-7 md:col-start-6">
+          <p class="mb-6 text-xs font-bold uppercase tracking-[0.14em]">Common questions. <span class="float-right">×</span></p>
+          <div class="faq-row border-t border-[#f3f0e8]/10 py-9"><h2 class="text-4xl font-semibold tracking-[-0.07em] md:text-6xl">How does mobile detailing work without water at my location?</h2><p class="mt-5 max-w-2xl text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">Our mobile units carry their own water supply, so service works at homes, offices, or parking garages — no hose or outdoor connection required.</p></div>
+          <div class="faq-row border-t border-[#f3f0e8]/10 py-9"><h3 class="text-3xl font-semibold tracking-[-0.06em]">How often should I detail my car in Arizona?</h3><p class="mt-5 max-w-2xl text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">Maintenance every two to four weeks keeps dust from bonding to paint. Ceramic sealant should be reapplied roughly every three months, coatings about once a year.</p></div>
+          <div class="faq-row border-t border-[#f3f0e8]/10 py-9"><h3 class="text-3xl font-semibold tracking-[-0.06em]">Why does ceramic protection matter here specifically?</h3><p class="mt-5 max-w-2xl text-sm font-medium leading-[1.7] text-[#f3f0e8]/56">Arizona's UV and heat accelerate paint oxidation and dry out leather and trim faster than almost anywhere else. Ceramic protection slows that deterioration significantly.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="footer" class="footer-section relative min-h-screen overflow-hidden px-5 py-24 md:px-8 lg:px-12">
+      <div class="grid gap-12 md:grid-cols-12">
+        <div class="md:col-span-3"><p class="section-label">Motor City</p></div>
+        <div class="md:col-span-9"><h2 class="footer-wordmark wordmark text-[4.2rem] font-black leading-none sm:text-[6.5rem] md:text-[9rem] lg:text-[11.5rem]">Motor City Auto Detailing</h2></div>
+      </div>
+
+      <div class="absolute right-5 top-28 text-xs font-bold uppercase tracking-[0.14em] text-[#f3f0e8]/44 md:right-8">© 1994–2026</div>
+
+      <div class="footer-links absolute bottom-16 left-5 right-5 grid gap-10 border-t border-[#f3f0e8]/12 pt-10 md:left-8 md:right-8 md:grid-cols-12">
+        <div class="md:col-span-5">
+          <p class="mb-5 text-xs font-bold uppercase tracking-[0.22em] text-[#f3f0e8]/36">Mobile Auto Detailing / Est. 1994</p>
+          <h3 class="max-w-xl text-[42px] font-black leading-[0.92] tracking-[-0.07em] text-[#f3f0e8] md:text-[64px] lg:text-[76px]">
+            Our Shop Is In Your Driveway.
+          </h3>
+
+          <div class="mt-10 grid max-w-lg grid-cols-2 border-y border-[#f3f0e8]/12 py-5">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#f3f0e8]/34">Call</p>
+              <p class="mt-2 text-sm font-semibold text-[#f3f0e8]/78"><a href="tel:+14805709750" class="hover:text-[#2f5eff]">(480) 570-9750</a></p>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#f3f0e8]/34">Service Area</p>
+              <p class="mt-2 text-sm font-semibold text-[#f3f0e8]/78">Mesa & The East Valley</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-3 md:col-start-7">
+          <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#f3f0e8]/36">About</p>
+          <p class="mt-6 text-sm font-medium leading-[1.75] text-[#f3f0e8]/58">
+            Mobile auto detailing for Mesa, Tempe, Chandler, Gilbert, Queen Creek, Scottsdale, and Phoenix since 1994 — personal attention, quality, and convenience, delivered to your driveway.
+          </p>
+
+          <a href="#contact" class="group mt-9 flex items-center justify-between border-b border-[#f3f0e8]/14 pb-4 text-sm font-bold text-[#f3f0e8] transition hover:border-[#f3f0e8]/40">
+            Request service
+            <span class="transition duration-300 group-hover:translate-x-2">→</span>
+          </a>
+
+          <a href="https://www.motorcityautodetailing.com/reviews" class="group mt-4 flex items-center justify-between border-b border-[#f3f0e8]/14 pb-4 text-sm font-bold text-[#f3f0e8]/62 transition hover:border-[#f3f0e8]/40 hover:text-[#f3f0e8]">
+            Read client reviews
+            <span class="transition duration-300 group-hover:translate-x-2">→</span>
+          </a>
+        </div>
+
+        <div class="grid gap-10 md:col-span-2 md:col-start-11">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#f3f0e8]/36">Social</p>
+            <div class="mt-6 space-y-4 text-sm font-bold text-[#f3f0e8]/72">
+              <a href="https://facebook.com/motorcityad" target="_blank" rel="noopener" class="group flex items-center justify-between transition hover:text-[#f3f0e8]">Facebook <span class="text-[#f3f0e8]/28 transition group-hover:translate-x-1 group-hover:text-[#f3f0e8]">↗</span></a>
+              <a href="https://instagram.com/motorcityautodetailing" target="_blank" rel="noopener" class="group flex items-center justify-between transition hover:text-[#f3f0e8]">Instagram <span class="text-[#f3f0e8]/28 transition group-hover:translate-x-1 group-hover:text-[#f3f0e8]">↗</span></a>
+              <a href="https://www.google.com/maps/place/Motor+City+Auto+Detailing,+LLC/data=!4m2!3m1!1s0x0:0xad77f5db7d08bb1a" target="_blank" rel="noopener" class="group flex items-center justify-between transition hover:text-[#f3f0e8]">Google <span class="text-[#f3f0e8]/28 transition group-hover:translate-x-1 group-hover:text-[#f3f0e8]">↗</span></a>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.22em] text-[#f3f0e8]/36">Hours</p>
+            <div class="mt-6 space-y-3 text-sm font-semibold text-[#f3f0e8]/50">
+              <p>Mon–Fri 8am–5pm</p>
+              <p>Saturday 8am–1pm</p>
+              <p>Sunday Closed</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-12">
+          <div class="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-[#f3f0e8]/12 pt-5">
+            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#f3f0e8]/34">© 1994-2026 Motor City Auto Detailing, LLC</p>
+            <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#f3f0e8]/34">Mesa, AZ / East Valley Service</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!prefersReducedMotion && window.gsap && window.ScrollTrigger && window.Lenis) {
+      gsap.registerPlugin(ScrollTrigger);
+      gsap.defaults({ ease: "power3.out" });
+
+      const lenis = new Lenis({
+        duration: 1.05,
+        smoothWheel: true,
+        wheelMultiplier: 0.85,
+        touchMultiplier: 1.15
+      });
+
+      lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+
+      // ---- On-load: brand preloader -> hero entrance ----
+      const axLoader = document.getElementById("ax-loader");
+
+      if (lenis && axLoader) {
+        lenis.stop();
+      }
+
+      const loadTl = gsap.timeline({ paused: true });
+
+      loadTl
+        .from("header", { y: -24, opacity: 0, duration: 0.75 })
+        .from(".hero-copy > *", { y: 28, opacity: 0, stagger: 0.09, duration: 0.8 }, "-=0.35")
+        .from(".hero-card", { y: 90, opacity: 0, rotate: 0, scale: 0.94, stagger: 0.08, duration: 1.05 }, "-=0.55")
+        .from(".hero-cta", { scale: 0, opacity: 0, duration: 0.6 }, "-=0.45")
+        .from(".hero-wordmark", { yPercent: 18, opacity: 0, duration: 1 }, "-=0.7")
+        .from(".hero-meta", { y: 24, opacity: 0, duration: 0.75 }, "-=0.65");
+
+      if (axLoader) {
+        const brandEl = axLoader.querySelector(".ax-loader__brand");
+        const barEl = axLoader.querySelector(".ax-loader__bar");
+        const metaEl = axLoader.querySelector(".ax-loader__meta");
+        const pctEl = axLoader.querySelector(".ax-loader__pct");
+        const counter = { v: 0 };
+
+        gsap.timeline({
+          defaults: { ease: "power3.out" },
+          onComplete() {
+            axLoader.remove();
+            lenis.start();
+            ScrollTrigger.refresh();
+          }
+        })
+          .to(brandEl, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9, ease: "power2.out" }, 0)
+          .to(metaEl, { opacity: 1, duration: 0.6 }, 0.3)
+          .to(barEl, { scaleX: 1, duration: 1.1, ease: "power2.inOut" }, 0.2)
+          .to(counter, {
+            v: 100,
+            duration: 1.1,
+            ease: "power2.inOut",
+            onUpdate() {
+              pctEl.textContent = String(Math.round(counter.v)).padStart(3, "0");
+            }
+          }, 0.2)
+          .to([brandEl, metaEl], { opacity: 0, y: -20, filter: "blur(8px)", duration: 0.5, ease: "power2.in" }, "+=0.15")
+          .to(axLoader, { yPercent: -100, duration: 0.9, ease: "power4.inOut" }, "<0.1")
+          .add(() => { loadTl.play(); }, "<0.35");
+      } else {
+        loadTl.play();
+        lenis.start();
+      }
+
+      // Universal soft reveals
+      gsap.utils.toArray("[data-reveal], .reveal").forEach((item) => {
+        gsap.to(item, {
+          opacity: 1,
+          y: 0,
+          duration: .9,
+          scrollTrigger: {
+            trigger: item,
+            start: "top 84%",
+            toggleActions: "play none none reverse"
+          }
+        });
+      });
+
+      // Hero pinned cinematic transformation
+      const hero = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".hero-section",
+          start: "top top",
+          end: "+=115%",
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1
+        }
+      });
+
+      hero
+        .to(".hero-wordmark", { yPercent: -50, scale: 1.07, opacity: .86, duration: 1 }, 0)
+        .to(".hero-copy", { y: -60, opacity: .42, duration: 1 }, 0)
+        .to(".hero-meta", { y: -34, opacity: .72, duration: 1 }, 0)
+        .to(".hero-stack", { y: -70, scale: .94, duration: 1 }, 0)
+        .to(".hero-card:nth-child(1)", { x: -46, y: 34, rotate: -24, duration: 1 }, 0)
+        .to(".hero-card:nth-child(2)", { x: 42, y: -34, rotate: 20, duration: 1 }, 0)
+        .to(".hero-card:nth-child(3)", { x: 54, y: 22, rotate: 22, duration: 1 }, 0)
+        .to(".hero-card:nth-child(4)", { x: 8, y: 12, rotate: 0, duration: 1 }, 0);
+
+      // Studio pinned word rhythm
+      const brand = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".brand-section",
+          start: "top top",
+          end: "+=110%",
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1
+        }
+      });
+
+      brand
+        .fromTo(".brand-drift", { xPercent: 4 }, { xPercent: -22, duration: 1 }, 0)
+        .fromTo(".brand-word", {
+          opacity: 0,
+          y: 80,
+          x: (i) => (i % 2 ? -90 : 90)
+        }, {
+          opacity: 1,
+          y: 0,
+          x: 0,
+          stagger: .08,
+          duration: .6
+        }, .08)
+        .to(".brand-word", {
+          x: (i) => (i % 2 ? -34 : 34),
+          stagger: .04,
+          duration: .45
+        }, .64);
+
+      // Services reveal and image strip motion
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".services-section",
+          start: "top 65%",
+          end: "bottom 30%",
+          scrub: 1
+        }
+      })
+        .from(".services-copy", { y: 90, opacity: 0, duration: .35 })
+        .from(".service-card", { y: 42, opacity: 0, stagger: .08, duration: .45 }, .16)
+        .to(".strip-image", { xPercent: -14, scale: 1.22, duration: .8 }, 0);
+
+      // Parallax media
+      gsap.utils.toArray(".parallax-image").forEach((item) => {
+        const isFast = item.classList.contains("parallax-fast");
+        const section = item.closest("section");
+
+        gsap.fromTo(item, { y: isFast ? 90 : 50 }, {
+          y: isFast ? -120 : -70,
+          ease: "none",
+          scrollTrigger: {
+            trigger: section,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+
+        const img = item.querySelector("img");
+        if (img) {
+          gsap.fromTo(img, { scale: 1.18, yPercent: isFast ? -8 : -5 }, {
+            scale: 1.04,
+            yPercent: isFast ? 8 : 5,
+            ease: "none",
+            scrollTrigger: {
+              trigger: section,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: true
+            }
+          });
+        }
+      });
+
+      // Stats stagger
+      gsap.from(".stat-grid .note-card", {
+        y: 52,
+        opacity: 0,
+        stagger: .08,
+        duration: .8,
+        scrollTrigger: {
+          trigger: ".numbers-intro",
+          start: "top 58%",
+          toggleActions: "play none none reverse"
+        }
+      });
+
+      // Archive scroll
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".archive-scroll-section",
+          start: "top 75%",
+          end: "bottom 20%",
+          scrub: 1
+        }
+      })
+        .from(".archive-title", { y: 80, opacity: 0, duration: 0.45 }, 0)
+        .from(".archive-card", {
+          y: 100,
+          opacity: 0,
+          rotate: (i) => [-3, 2, -2, 3, -1][i],
+          stagger: 0.08,
+          duration: 0.65
+        }, 0.12)
+        .to(".archive-gallery", { xPercent: -18, duration: 1 }, 0.25)
+        .to(".archive-card img, .archive-card video", { scale: 1.18, duration: 1 }, 0.25);
+
+      // Autoplay archive reels once visible, pause off-screen for performance
+      const archiveVideos = document.querySelectorAll(".archive-card video");
+      if (archiveVideos.length && "IntersectionObserver" in window) {
+        const videoObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            const vid = entry.target;
+            if (entry.isIntersecting) {
+              if (!vid.src && vid.querySelector("source")) {
+                vid.load();
+              }
+              vid.play().catch(() => {});
+            } else {
+              vid.pause();
+            }
+          });
+        }, { threshold: 0.25 });
+        archiveVideos.forEach((vid) => videoObserver.observe(vid));
+      }
+
+      // Work pinned number
+      const work = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".work-section",
+          start: "top top",
+          end: "+=120%",
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1
+        }
+      });
+
+      work
+        .from(".work-copy", { x: -80, opacity: 0, duration: .4 }, 0)
+        .fromTo(".masked-number", { scale: .82, y: 80, backgroundPosition: "50% 28%" }, { scale: 1.1, y: -50, backgroundPosition: "50% 74%", duration: 1 }, 0)
+        .from(".project-card", { y: 80, opacity: 0, rotate: 0, stagger: .1, duration: .4 }, .15)
+        .to(".project-card", { y: -40, x: (i) => (i ? 42 : -34), duration: .8 }, .45);
+
+      // Field notes editorial
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".partners-section",
+          start: "top 72%",
+          end: "bottom 28%",
+          scrub: 1
+        }
+      })
+        .fromTo(".partners-heading", { yPercent: 10, opacity: 0.06 }, { yPercent: -16, opacity: 0.12, duration: 1 }, 0)
+        .from(".partners-section .section-label", { y: 24, opacity: 0, duration: 0.35 }, 0.08)
+        .from(".partners-section h2:not(.partners-heading)", { y: 70, opacity: 0, duration: 0.55 }, 0.12)
+        .from(".partner-logos .note-card", {
+          y: 100,
+          opacity: 0,
+          rotate: (i) => [-2, 2, -1, 1, -2][i],
+          stagger: 0.08,
+          duration: 0.7
+        }, 0.2)
+        .to(".partner-logos .note-card", {
+          y: (i) => [-24, 18, -12, 14, -18][i],
+          stagger: 0.04,
+          duration: 0.55
+        }, 0.62);
+
+      // Timeline process
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".process-section",
+          start: "top 60%",
+          end: "bottom 40%",
+          scrub: 1
+        }
+      })
+        .to(".timeline-bar", { scaleX: 1, stagger: .12, duration: .6 }, 0)
+        .from(".process-columns > div", { y: 38, opacity: 0, stagger: .08, duration: .45 }, .25);
+
+      // Pricing pin on desktop only
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".pricing-section",
+          start: "top top",
+          end: "+=80%",
+          scrub: 1,
+          pin: window.innerWidth >= 768,
+          anticipatePin: 1
+        }
+      })
+        .from(".pricing-copy", { y: 50, opacity: 0, duration: .35 }, 0)
+        .from(".pricing-card", { x: 110, opacity: 0, stagger: .16, duration: .55 }, .12);
+
+      // Contact / footer
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".contact-section",
+          start: "top 62%",
+          end: "bottom 34%",
+          scrub: 1
+        }
+      })
+        .from(".contact-form > *", { y: 36, opacity: 0, stagger: .07, duration: .45 }, 0)
+        .from(".faq-row", { y: 38, opacity: 0, stagger: .08, duration: .45 }, .12);
+
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".footer-section",
+          start: "top 72%",
+          end: "bottom bottom",
+          scrub: 1
+        }
+      })
+        .fromTo(".footer-wordmark", { scale: 0.9, y: 120, opacity: 0.35 }, { scale: 1, y: 0, opacity: 1, duration: 0.9 }, 0)
+        .from(".footer-links", { y: 80, opacity: 0, duration: 0.5 }, 0.2)
+        .from(".footer-links h3", { y: 60, opacity: 0, letterSpacing: "-0.12em", duration: 0.45 }, 0.3)
+        .from(".footer-links a", { y: 18, opacity: 0, stagger: 0.04, duration: 0.3 }, 0.45);
+
+      window.addEventListener("load", () => ScrollTrigger.refresh());
+      window.addEventListener("resize", () => ScrollTrigger.refresh());
+
+    } else {
+      document.getElementById("ax-loader")?.remove();
+
+      document.querySelectorAll(".reveal, [data-reveal]").forEach((item) => {
+        item.style.opacity = "1";
+        item.style.transform = "none";
+      });
+
+      document.querySelectorAll(".timeline-bar").forEach((item) => {
+        item.style.transform = "scaleX(1)";
+      });
+
+      document.querySelectorAll(".archive-card video").forEach((vid) => {
+        vid.play().catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
